@@ -1,72 +1,76 @@
 <template>
-  <div class="container">
-    <div>
-      <logo />
-      <h1 class="title">
-        yoshipi
-      </h1>
-      <h2 class="subtitle">
-        My rad Nuxt.js project
-      </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
-      </div>
+  <div>
+    <h3>掲示板に投稿する</h3>
+    <label for="name">ニックネーム:</label>
+    <input type="text" id="name" v-model="name" />
+    <br />
+    <label for="comment">コメント:</label>
+    <textarea id="comment" v-model="comment"></textarea>
+    <br />
+    <button @click="createComment">コメントをサーバーに送る</button>
+
+    <h2>掲示板</h2>
+    <div v-for="post in posts" :key="post.name">
+      <br />
+      <div>名前: {{ post.fields.name.stringValue }}</div>
+      <div>名前: {{ post.fields.comment.stringValue }}</div>
     </div>
+    <p>id: {{ idToken }}</p>
   </div>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-
+import axios from "~/plugins/axios.js";
 export default {
-  components: {
-    Logo
+  data() {
+    return {
+      name: "",
+      comment: "",
+      posts: []
+    };
+  },
+  computed: {
+    idToken() {
+      return this.$store.getters.idToken;
+    }
+  },
+  created() {
+    axios
+      .get("/comments", {
+        headers: {
+          Authorization: `Bearer ${this.idToken}`
+        }
+      })
+      .then(response => {
+        this.posts = response.data.documents;
+      });
+  },
+  methods: {
+    createComment() {
+      axios.post(
+        "/comments",
+        {
+          fields: {
+            name: {
+              stringValue: this.name
+            },
+            comment: {
+              stringValue: this.comment
+            }
+          }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.idToken}`
+          }
+        }
+      );
+      this.name = "";
+      this.comment = "";
+    }
   }
-}
+};
 </script>
 
 <style>
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.title {
-  font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
-}
 </style>

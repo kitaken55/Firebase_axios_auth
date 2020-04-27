@@ -4,6 +4,9 @@ export default {
   /*
   ** Headers of the page
   */
+  router: {
+    middleware: 'redirect'
+  },
   head: {
     title: process.env.npm_package_name || '',
     meta: [
@@ -54,7 +57,7 @@ export default {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
-  }
+  },
 }
